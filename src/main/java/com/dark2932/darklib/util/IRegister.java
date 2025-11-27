@@ -23,6 +23,7 @@ public class IRegister {
 
     private final IRegister.IItem ItemRegister;
     private final IRegister.IBlock BlockRegister;
+    private final IRegister.ICreativeTab TabRegister;
     public final DeferredRegister<Item> ITEMS;
     public final DeferredRegister<Block> BLOCKS;
     public final DeferredRegister<CreativeModeTab> TABS;
@@ -33,6 +34,7 @@ public class IRegister {
         this.TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, modid);
         this.ItemRegister = new IItem(ITEMS);
         this.BlockRegister = new IBlock(BLOCKS, ItemRegister);
+        this.TabRegister = new ICreativeTab(TABS);
     }
 
     public void init(IEventBus bus) {
@@ -49,8 +51,8 @@ public class IRegister {
         return BlockRegister;
     }
 
-    public RegistryObject<CreativeModeTab> tab(String name, Supplier<CreativeModeTab> tab) {
-        return TABS.register(name, tab);
+    public ICreativeTab tab() {
+        return TabRegister;
     }
 
     public static class IItem {
@@ -97,6 +99,20 @@ public class IRegister {
             RegistryObject<Block> blockObj = REGISTRY.register(name, block);
             RegistryObject<Item> itemObj = ItemRegister.of(name, () -> new BlockBase.item(blockObj));
             return new BlockEntry(blockObj, itemObj);
+        }
+
+    }
+
+    public static class ICreativeTab {
+
+        private final DeferredRegister<CreativeModeTab> REGISTRY;
+
+        private ICreativeTab(DeferredRegister<CreativeModeTab> registry) {
+            this.REGISTRY = registry;
+        }
+
+        public RegistryObject<CreativeModeTab> of(String name, Supplier<? extends CreativeModeTab> tab) {
+            return REGISTRY.register(name, tab);
         }
 
     }

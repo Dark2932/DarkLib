@@ -4,6 +4,7 @@ import com.dark2932.darklib.block.BlockBase;
 import com.dark2932.darklib.block.BlockEntry;
 import com.dark2932.darklib.item.ItemBase;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -114,6 +115,15 @@ public class IRegister {
         public RegistryObject<CreativeModeTab> of(String name, Supplier<? extends CreativeModeTab> tab) {
             return REGISTRY.register(name, tab);
         }
+
+//        public static final RegistryObject<CreativeModeTab> TAB_TWT = (
+//                r.tab("extratwt", () -> CreativeModeTab.builder()
+//                        .title(Component.translatable("itemGroup.extratwt"))
+//                        .icon(() -> ItemRegistries.BADGE.get().getDefaultInstance())
+//                        .displayItems((parameters, output) -> r.ITEMS.getEntries().forEach((item) -> output.accept(item.get())))
+//                        .build()
+//                )
+//        );
 
     }
 

@@ -1,9 +1,9 @@
 package com.dark2932.darklib;
 
 import com.dark2932.darklib.util.IRegister;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /**
  * @author Dark2932
@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.Mod;
 public class DarkLib {
 
     public static final String MODID = "darklib";
-    public static final IEventBus BUS = MinecraftForge.EVENT_BUS;
+    public static final IEventBus BUS = FMLJavaModLoadingContext.get().getModEventBus();
     public static final IRegister REGISTER = new IRegister(MODID);
 
     public DarkLib() {

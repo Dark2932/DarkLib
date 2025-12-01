@@ -1,12 +1,12 @@
 package com.dark2932.darklib.util;
 
-import com.dark2932.darklib.block.BlockBase;
 import com.dark2932.darklib.block.BlockEntry;
-import com.dark2932.darklib.item.ItemBase;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -14,6 +14,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.util.Collection;
 import java.util.function.Supplier;
 
 /**
@@ -22,9 +23,6 @@ import java.util.function.Supplier;
  */
 public class IRegister {
 
-    private final IRegister.IItem ItemRegister;
-    private final IRegister.IBlock BlockRegister;
-    private final IRegister.ICreativeTab TabRegister;
     public final DeferredRegister<Item> ITEMS;
     public final DeferredRegister<Block> BLOCKS;
     public final DeferredRegister<CreativeModeTab> TABS;
@@ -33,9 +31,6 @@ public class IRegister {
         this.ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, modid);
         this.BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, modid);
         this.TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, modid);
-        this.ItemRegister = new IItem(ITEMS);
-        this.BlockRegister = new IBlock(BLOCKS, ItemRegister);
-        this.TabRegister = new ICreativeTab(TABS);
     }
 
     public void init(IEventBus bus) {
@@ -44,87 +39,61 @@ public class IRegister {
         TABS.register(bus);
     }
 
-    public IItem item() {
-        return ItemRegister;
+    public RegistryObject<Item> createItem(String name) {
+        return createItem(name, new Item.Properties());
     }
 
-    public IBlock block() {
-        return BlockRegister;
+    public RegistryObject<Item> createItem(String name, Item.Properties properties) {
+        return createItem(name, () -> new Item(properties));
     }
 
-    public ICreativeTab tab() {
-        return TabRegister;
+    public RegistryObject<Item> createItem(String name, Supplier<? extends Item> item) {
+        return ITEMS.register(name, item);
     }
 
-    public static class IItem {
-
-        private final DeferredRegister<Item> REGISTRY;
-
-        private IItem(DeferredRegister<Item> registry) {
-            this.REGISTRY = registry;
-        }
-
-        public RegistryObject<Item> of(String name) {
-            return of(name, ItemBase::new);
-        }
-
-        public RegistryObject<Item> of(String name, Item.Properties properties) {
-            return of(name, () -> new ItemBase(properties));
-        }
-
-        public RegistryObject<Item> of(String name, Supplier<? extends Item> item) {
-            return REGISTRY.register(name, item);
-        }
-
+    public BlockEntry createBlock(String name) {
+        return createBlock(name, BlockBehaviour.Properties.of());
     }
 
-    public static class IBlock {
-
-        private final DeferredRegister<Block> REGISTRY;
-        private final IRegister.IItem ItemRegister;
-
-        private IBlock(DeferredRegister<Block> registry, IRegister.IItem itemRegister) {
-            this.REGISTRY = registry;
-            this.ItemRegister = itemRegister;
-        }
-
-        public BlockEntry of(String name) {
-            return of(name, BlockBase::new);
-        }
-
-        public BlockEntry of(String name, BlockBehaviour.Properties properties) {
-            return of(name, () -> new BlockBase(properties));
-        }
-
-        public BlockEntry of(String name, Supplier<? extends Block> block) {
-            RegistryObject<Block> blockObj = REGISTRY.register(name, block);
-            RegistryObject<Item> itemObj = ItemRegister.of(name, () -> new BlockBase.item(blockObj));
-            return new BlockEntry(blockObj, itemObj);
-        }
-
+    public BlockEntry createBlock(String name, BlockBehaviour.Properties blockProperties) {
+        return createBlock(name, blockProperties, new Item.Properties());
     }
 
-    public static class ICreativeTab {
+    public BlockEntry createBlock(String name, BlockBehaviour.Properties blockProperties, Item.Properties itemProperties) {
+        final Supplier<Block> blockSupplier = () -> new Block(blockProperties);
+        RegistryObject<Block> blockObj = BLOCKS.register(name, blockSupplier);
 
-        private final DeferredRegister<CreativeModeTab> REGISTRY;
+        final Supplier<Item> itemSupplier = () -> new BlockItem(blockObj.get(), itemProperties);
+        RegistryObject<Item> itemObj = createItem(name, itemSupplier);
 
-        private ICreativeTab(DeferredRegister<CreativeModeTab> registry) {
-            this.REGISTRY = registry;
-        }
+        return new BlockEntry(blockObj, itemObj, blockSupplier, itemSupplier);
+    }
 
-        public RegistryObject<CreativeModeTab> of(String name, Supplier<? extends CreativeModeTab> tab) {
-            return REGISTRY.register(name, tab);
-        }
+    public BlockEntry createBlock(String name, Supplier<? extends Block> block, Supplier<? extends Item> blockItem) {
+        final RegistryObject<Block> blockObj = BLOCKS.register(name, block);
+        final RegistryObject<Item> itemObj = createItem(name, blockItem);
+        return new BlockEntry(blockObj, itemObj, block, blockItem);
+    }
 
-//        public static final RegistryObject<CreativeModeTab> TAB_TWT = (
-//                r.tab("extratwt", () -> CreativeModeTab.builder()
-//                        .title(Component.translatable("itemGroup.extratwt"))
-//                        .icon(() -> ItemRegistries.BADGE.get().getDefaultInstance())
-//                        .displayItems((parameters, output) -> r.ITEMS.getEntries().forEach((item) -> output.accept(item.get())))
-//                        .build()
-//                )
-//        );
+    public RegistryObject<CreativeModeTab> createTabWithIcon(String name, Supplier<ItemStack> icon) {
+        return createTab(name, icon, ITEMS.getEntries());
+    }
 
+    public RegistryObject<CreativeModeTab> createTab(String name, Supplier<ItemStack> icon, Collection<RegistryObject<Item>> items) {
+        return createTab(name, icon, (parameters, output) -> items.forEach((item) -> output.accept(item.get())));
+    }
+
+    public RegistryObject<CreativeModeTab> createTab(String name, Supplier<ItemStack> icon, CreativeModeTab.DisplayItemsGenerator displayItemsGenerator) {
+        return createTab(name, () -> CreativeModeTab.builder()
+            .title(Component.translatable("itemGroup." + name))
+            .icon(icon)
+            .displayItems(displayItemsGenerator)
+            .build()
+        );
+    }
+
+    public RegistryObject<CreativeModeTab> createTab(String name, Supplier<CreativeModeTab> tab) {
+        return TABS.register(name, tab);
     }
 
 }

@@ -1,28 +1,19 @@
-package com.dark2932.darklib.block;
+package com.dark2932.darklib.item;
 
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.util.function.Supplier;
 
 /**
  * @author Dark2932
- * @date 2025/11/26
+ * @date 2025/12/3
  */
-public record BlockEntry(RegistryObject<Block> block, RegistryObject<Item> item, Supplier<? extends Block> blockSupplier, Supplier<? extends Item> itemSupplier) {
-
-    public RegistryObject<Block> getBlockObj() {
-        return block;
-    }
+public record ItemEntry(RegistryObject<Item> item, Supplier<? extends Item> itemSupplier) {
 
     public RegistryObject<Item> getItemObj() {
         return item;
-    }
-
-    public Block getBlock() {
-        return block.get();
     }
 
     public Item getItem() {
@@ -31,10 +22,6 @@ public record BlockEntry(RegistryObject<Block> block, RegistryObject<Item> item,
 
     public ItemStack getStack() {
         return getItem().getDefaultInstance();
-    }
-
-    public Supplier<? extends Block> getBlockSupplier() {
-        return blockSupplier;
     }
 
     public Supplier<? extends Item> getItemSupplier() {

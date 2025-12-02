@@ -1,6 +1,9 @@
 package com.dark2932.darklib.util;
 
+import com.dark2932.darklib.block.BlockBase;
 import com.dark2932.darklib.block.BlockEntry;
+import com.dark2932.darklib.item.ItemBase;
+import com.dark2932.darklib.item.ItemEntry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
@@ -39,16 +42,25 @@ public class IRegister {
         TABS.register(bus);
     }
 
-    public RegistryObject<Item> createItem(String name) {
+    public ItemEntry createItem(ItemBase base) {
+        return createItem(base.getName(), base.getProperties());
+    }
+
+    public ItemEntry createItem(String name) {
         return createItem(name, new Item.Properties());
     }
 
-    public RegistryObject<Item> createItem(String name, Item.Properties properties) {
+    public ItemEntry createItem(String name, Item.Properties properties) {
         return createItem(name, () -> new Item(properties));
     }
 
-    public RegistryObject<Item> createItem(String name, Supplier<? extends Item> item) {
-        return ITEMS.register(name, item);
+    public ItemEntry createItem(String name, Supplier<? extends Item> itemSupplier) {
+        final RegistryObject<Item> itemObj = ITEMS.register(name, itemSupplier);
+        return new ItemEntry(itemObj, itemSupplier);
+    }
+
+    public BlockEntry createBlock(BlockBase base) {
+        return createBlock(base.getName(), base.getBlockProperties(), base.getItemProperties());
     }
 
     public BlockEntry createBlock(String name) {
@@ -60,19 +72,24 @@ public class IRegister {
     }
 
     public BlockEntry createBlock(String name, BlockBehaviour.Properties blockProperties, Item.Properties itemProperties) {
-        final Supplier<Block> blockSupplier = () -> new Block(blockProperties);
-        RegistryObject<Block> blockObj = BLOCKS.register(name, blockSupplier);
-
-        final Supplier<Item> itemSupplier = () -> new BlockItem(blockObj.get(), itemProperties);
-        RegistryObject<Item> itemObj = createItem(name, itemSupplier);
-
-        return new BlockEntry(blockObj, itemObj, blockSupplier, itemSupplier);
+        return createBlock(name, () -> new Block(blockProperties), itemProperties);
     }
 
-    public BlockEntry createBlock(String name, Supplier<? extends Block> block, Supplier<? extends Item> blockItem) {
-        final RegistryObject<Block> blockObj = BLOCKS.register(name, block);
-        final RegistryObject<Item> itemObj = createItem(name, blockItem);
-        return new BlockEntry(blockObj, itemObj, block, blockItem);
+    public BlockEntry createBlock(String name, Supplier<? extends Block> blockSupplier) {
+        return createBlock(name, blockSupplier, new Item.Properties());
+    }
+
+    public BlockEntry createBlock(String name, Supplier<? extends Block> blockSupplier, Item.Properties properties) {
+        final RegistryObject<Block> blockObj = BLOCKS.register(name, blockSupplier);
+        final Supplier<BlockItem> itemSupplier = () -> new BlockItem(blockObj.get(), properties);
+        final ItemEntry item = createItem(name, itemSupplier);
+        return new BlockEntry(blockObj, item.getItemObj(), blockSupplier, itemSupplier);
+    }
+
+    public BlockEntry createBlock(String name, Supplier<? extends Block> blockSupplier, Supplier<? extends BlockItem> itemSupplier) {
+        final RegistryObject<Block> blockObj = BLOCKS.register(name, blockSupplier);
+        final ItemEntry item = createItem(name, itemSupplier);
+        return new BlockEntry(blockObj, item.getItemObj(), blockSupplier, itemSupplier);
     }
 
     public RegistryObject<CreativeModeTab> createTabWithIcon(String name, Supplier<ItemStack> icon) {

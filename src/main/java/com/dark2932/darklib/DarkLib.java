@@ -3,6 +3,7 @@ package com.dark2932.darklib;
 import com.dark2932.darklib.util.IRegister;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /**
@@ -19,5 +20,7 @@ public class DarkLib {
     public DarkLib() {
         REGISTER.init(BUS);
     }
+
+    private void commonSetup(final FMLCommonSetupEvent event) {}
 
 }

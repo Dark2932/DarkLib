@@ -17,6 +17,7 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.function.Supplier;
 
@@ -36,10 +37,12 @@ public class IRegister {
         this.TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, modid);
     }
 
-    public void init(IEventBus bus) {
-        ITEMS.register(bus);
-        BLOCKS.register(bus);
-        TABS.register(bus);
+    public void init(IEventBus bus, DeferredRegister<?>... registers) {
+        Arrays.asList(registers).forEach(register -> register.register(bus));
+    }
+
+    public void initAll(IEventBus bus) {
+        init(bus, ITEMS, BLOCKS, TABS);
     }
 
     public ItemEntry createItem(ItemBase base) {

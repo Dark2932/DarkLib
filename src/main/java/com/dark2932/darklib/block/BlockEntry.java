@@ -9,36 +9,19 @@ import java.util.function.Supplier;
 
 /**
  * @author Dark2932
- * @date 2025/11/26
  */
-public record BlockEntry(RegistryObject<Block> block, RegistryObject<Item> item, Supplier<? extends Block> blockSupplier, Supplier<? extends Item> itemSupplier) {
+public record BlockEntry(RegistryObject<Block> blockRegistry, RegistryObject<Item> itemRegistry, Supplier<? extends Block> blockSupplier, Supplier<? extends Item> itemSupplier) {
 
-    public RegistryObject<Block> getBlockObj() {
-        return block;
+    public Block block() {
+        return blockRegistry.get();
     }
 
-    public RegistryObject<Item> getItemObj() {
-        return item;
+    public Item item() {
+        return itemRegistry.get();
     }
 
-    public Block getBlock() {
-        return block.get();
-    }
-
-    public Item getItem() {
-        return item.get();
-    }
-
-    public ItemStack getStack() {
-        return getItem().getDefaultInstance();
-    }
-
-    public Supplier<? extends Block> getBlockSupplier() {
-        return blockSupplier;
-    }
-
-    public Supplier<? extends Item> getItemSupplier() {
-        return itemSupplier;
+    public ItemStack stack() {
+        return item().getDefaultInstance();
     }
 
 }

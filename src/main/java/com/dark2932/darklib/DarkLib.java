@@ -7,7 +7,6 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 /**
  * @author Dark2932
- * @date 2025/11/26
  */
 @Mod(DarkLib.MODID)
 public class DarkLib {

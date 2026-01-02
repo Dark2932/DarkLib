@@ -8,24 +8,15 @@ import java.util.function.Supplier;
 
 /**
  * @author Dark2932
- * @date 2025/12/3
  */
-public record ItemEntry(RegistryObject<Item> item, Supplier<? extends Item> itemSupplier) {
+public record ItemEntry(RegistryObject<Item> itemRegistry, Supplier<? extends Item> itemSupplier) {
 
-    public RegistryObject<Item> getItemObj() {
-        return item;
+    public Item item() {
+        return itemRegistry.get();
     }
 
-    public Item getItem() {
-        return item.get();
-    }
-
-    public ItemStack getStack() {
-        return getItem().getDefaultInstance();
-    }
-
-    public Supplier<? extends Item> getItemSupplier() {
-        return itemSupplier;
+    public ItemStack stack() {
+        return item().getDefaultInstance();
     }
 
 }

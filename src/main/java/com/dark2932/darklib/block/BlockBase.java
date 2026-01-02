@@ -5,7 +5,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 
 /**
  * @author Dark2932
- * @date 2025/12/2
  */
 public abstract class BlockBase {
 

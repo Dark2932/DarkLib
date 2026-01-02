@@ -4,7 +4,6 @@ import net.minecraft.world.item.Item;
 
 /**
  * @author Dark2932
- * @date 2025/12/2
  */
 public abstract class ItemBase {
 

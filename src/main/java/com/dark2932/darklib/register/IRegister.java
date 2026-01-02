@@ -3,12 +3,8 @@ package com.dark2932.darklib.register;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * @author Dark2932
- * @date 2025/12/23
  */
 public class IRegister<T> {
 
@@ -27,11 +23,9 @@ public class IRegister<T> {
     }
 
     public static void init(IEventBus bus, IRegister<?>... registers) {
-        init(bus, Arrays.asList(registers));
-    }
-
-    public static void init(IEventBus bus, List<IRegister<?>> list) {
-        list.forEach(register -> register.init(bus));
+        for (IRegister<?> register : registers) {
+            register.init(bus);
+        }
     }
 
 }

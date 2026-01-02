@@ -7,6 +7,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -15,17 +16,16 @@ import java.util.function.Supplier;
 
 /**
  * @author Dark2932
- * @date 2025/12/23
  */
 public class BlockRegister extends IRegister<Block> {
 
-    public final DeferredRegister<Block> BLOCKS;
+    private final DeferredRegister<Block> BLOCKS;
     private final ItemRegister itemRegister;
 
-    public BlockRegister(String modid, ItemRegister itemRegister) {
+    public BlockRegister(String modid) {
         super(DeferredRegister.create(ForgeRegistries.BLOCKS, modid));
         this.BLOCKS = super.getDeferredRegister();
-        this.itemRegister = itemRegister;
+        this.itemRegister = ItemRegister.of(modid);
     }
 
     public BlockEntry createBlock(BlockBase base) {
@@ -52,17 +52,21 @@ public class BlockRegister extends IRegister<Block> {
         final RegistryObject<Block> blockObj = BLOCKS.register(name, blockSupplier);
         final Supplier<BlockItem> itemSupplier = () -> new BlockItem(blockObj.get(), properties);
         final ItemEntry item = itemRegister.createItem(name, itemSupplier);
-        return new BlockEntry(blockObj, item.getItemObj(), blockSupplier, itemSupplier);
+        return new BlockEntry(blockObj, item.itemRegistry(), blockSupplier, itemSupplier);
     }
 
-    public BlockEntry createBlock(String name, Supplier<? extends Block> blockSupplier, Supplier<? extends BlockItem> itemSupplier) {
-        final RegistryObject<Block> blockObj = BLOCKS.register(name, blockSupplier);
-        final ItemEntry item = itemRegister.createItem(name, itemSupplier);
-        return new BlockEntry(blockObj, item.getItemObj(), blockSupplier, itemSupplier);
+    public ItemRegister getItemRegister() {
+        return itemRegister;
     }
 
-    public static BlockRegister of(String modid, ItemRegister itemRegister) {
-        return new BlockRegister(modid, itemRegister);
+    @Override
+    public void init(IEventBus bus) {
+        BLOCKS.register(bus);
+        itemRegister.init(bus);
+    }
+
+    public static BlockRegister of(String modid) {
+        return new BlockRegister(modid);
     }
 
 }

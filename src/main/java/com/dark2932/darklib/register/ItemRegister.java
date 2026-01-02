@@ -11,11 +11,10 @@ import java.util.function.Supplier;
 
 /**
  * @author Dark2932
- * @date 2025/12/23
  */
 public class ItemRegister extends IRegister<Item> {
 
-    public final DeferredRegister<Item> ITEMS;
+    private final DeferredRegister<Item> ITEMS;
 
     public ItemRegister(String modid) {
         super(DeferredRegister.create(ForgeRegistries.ITEMS, modid));

@@ -7,7 +7,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -22,10 +21,10 @@ public class BlockRegister extends IRegister<Block> {
     private final DeferredRegister<Block> BLOCKS;
     private final ItemRegister itemRegister;
 
-    public BlockRegister(String modid) {
+    public BlockRegister(String modid, ItemRegister itemRegister) {
         super(DeferredRegister.create(ForgeRegistries.BLOCKS, modid));
         this.BLOCKS = super.getDeferredRegister();
-        this.itemRegister = ItemRegister.of(modid);
+        this.itemRegister = itemRegister;
     }
 
     public BlockEntry createBlock(BlockBase base) {
@@ -55,18 +54,8 @@ public class BlockRegister extends IRegister<Block> {
         return new BlockEntry(blockObj, item.itemRegistry(), blockSupplier, itemSupplier);
     }
 
-    public ItemRegister getItemRegister() {
-        return itemRegister;
-    }
-
-    @Override
-    public void init(IEventBus bus) {
-        BLOCKS.register(bus);
-        itemRegister.init(bus);
-    }
-
-    public static BlockRegister of(String modid) {
-        return new BlockRegister(modid);
+    public static BlockRegister of(String modid, ItemRegister itemRegister) {
+        return new BlockRegister(modid, itemRegister);
     }
 
 }

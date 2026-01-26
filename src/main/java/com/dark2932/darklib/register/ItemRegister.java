@@ -3,39 +3,31 @@ package com.dark2932.darklib.register;
 import com.dark2932.darklib.item.ItemBase;
 import com.dark2932.darklib.item.ItemEntry;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.registries.DeferredRegister;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
-
 import java.util.function.Supplier;
 
 /**
  * @author Dark2932
  */
-public class ItemRegister extends IRegister<Item> {
-
-    private final DeferredRegister<Item> ITEMS;
+public class ItemRegister extends ItemRegisterBase {
 
     public ItemRegister(String modid) {
-        super(DeferredRegister.create(ForgeRegistries.ITEMS, modid));
-        this.ITEMS = super.getDeferredRegister();
+        super(modid);
     }
 
-    public ItemEntry createItem(ItemBase base) {
-        return createItem(base.getName(), base.getProperties());
+    public ItemEntry newItem(ItemBase base) {
+        return newItem(base.getName(), base.getItemSupplier());
     }
 
-    public ItemEntry createItem(String name) {
-        return createItem(name, new Item.Properties());
+    public ItemEntry newItem(String name) {
+        return newItem(name, new Item.Properties());
     }
 
-    public ItemEntry createItem(String name, Item.Properties properties) {
-        return createItem(name, () -> new Item(properties));
+    public ItemEntry newItem(String name, Item.Properties itemProperties) {
+        return super.newItem(name, itemProperties);
     }
 
-    public ItemEntry createItem(String name, Supplier<? extends Item> itemSupplier) {
-        final RegistryObject<Item> itemObj = ITEMS.register(name, itemSupplier);
-        return new ItemEntry(itemObj, itemSupplier);
+    public ItemEntry newItem(String name, Supplier<? extends Item> itemSupplier) {
+        return super.newItem(name, itemSupplier);
     }
 
     public static ItemRegister of(String modid) {

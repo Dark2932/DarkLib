@@ -14,7 +14,7 @@ public class IRegister<T> {
         this.register = register;
     }
 
-    protected DeferredRegister<T> getDeferredRegister() {
+    public DeferredRegister<T> getDeferredRegister() {
         return register;
     }
 

@@ -3,14 +3,19 @@ package com.dark2932.darklib.register;
 import com.dark2932.darklib.block.BlockBase;
 import com.dark2932.darklib.block.BlockEntry;
 import com.dark2932.darklib.item.ItemEntry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
@@ -19,43 +24,81 @@ import java.util.function.Supplier;
 public class BlockRegister extends IRegister<Block> {
 
     private final DeferredRegister<Block> BLOCKS;
-    private final ItemRegister itemRegister;
+    private @Nullable ItemRegister itemRegister;
 
-    public BlockRegister(String modid, ItemRegister itemRegister) {
+    public BlockRegister(String modid) {
         super(DeferredRegister.create(ForgeRegistries.BLOCKS, modid));
         this.BLOCKS = super.getDeferredRegister();
-        this.itemRegister = itemRegister;
+        this.itemRegister = null;
     }
 
-    public BlockEntry createBlock(BlockBase base) {
-        return createBlock(base.getName(), base.getBlockProperties(), base.getItemProperties());
+    public BlockEntry newBlock(BlockBase base) {
+        return newBlock(base.getName(), base.getBlockSupplier(), (base.getItemProperties() == null ? new Item.Properties() : base.getItemProperties()));
     }
 
-    public BlockEntry createBlock(String name) {
-        return createBlock(name, BlockBehaviour.Properties.of());
+    public BlockEntry newBlock(String name) {
+        return newBlock(name, BlockBehaviour.Properties.of());
     }
 
-    public BlockEntry createBlock(String name, BlockBehaviour.Properties blockProperties) {
-        return createBlock(name, blockProperties, new Item.Properties());
+    public BlockEntry newBlock(String name, BlockBehaviour.Properties blockProperties) {
+        return newBlock(name, blockProperties, new Item.Properties());
     }
 
-    public BlockEntry createBlock(String name, BlockBehaviour.Properties blockProperties, Item.Properties itemProperties) {
-        return createBlock(name, () -> new Block(blockProperties), itemProperties);
+    public BlockEntry newBlock(String name, BlockBehaviour.Properties blockProperties, Item.Properties itemProperties) {
+        return newBlock(name, () -> new Block(blockProperties), itemProperties);
     }
 
-    public BlockEntry createBlock(String name, Supplier<? extends Block> blockSupplier) {
-        return createBlock(name, blockSupplier, new Item.Properties());
+    public BlockEntry newBlock(String name, Supplier<? extends Block> blockSupplier) {
+        return newBlock(name, blockSupplier, new Item.Properties());
     }
 
-    public BlockEntry createBlock(String name, Supplier<? extends Block> blockSupplier, Item.Properties properties) {
-        final RegistryObject<Block> blockObj = BLOCKS.register(name, blockSupplier);
-        final Supplier<BlockItem> itemSupplier = () -> new BlockItem(blockObj.get(), properties);
-        final ItemEntry item = itemRegister.createItem(name, itemSupplier);
-        return new BlockEntry(blockObj, item.itemRegistry(), blockSupplier, itemSupplier);
+    public BlockEntry newBlock(String name, Supplier<? extends Block> blockSupplier, Item.Properties itemProperties) {
+        RegistryObject<Block> blockRegistry = BLOCKS.register(name, blockSupplier);
+        ItemEntry itemEntry = newBlockItem(blockRegistry, itemProperties);
+        return new BlockEntry(blockRegistry, itemEntry.itemRegistry());
     }
 
-    public static BlockRegister of(String modid, ItemRegister itemRegister) {
-        return new BlockRegister(modid, itemRegister);
+    public ItemEntry newBlockItem(RegistryObject<Block> blockRegistry, Item.Properties itemProperties) {
+        ResourceLocation location = Objects.requireNonNull(blockRegistry.getId());
+        if (itemRegister == null) itemRegister = ItemRegister.of(location.getNamespace());
+        return itemRegister.newItem(location.getPath(), () -> new BlockItem(blockRegistry.get(), itemProperties));
+    }
+
+    public BlockEntry newBlockWithoutItem(BlockBase base) {
+        return newBlockWithoutItem(base.getName(), base.getBlockSupplier());
+    }
+
+    public BlockEntry newBlockWithoutItem(String name) {
+        return newBlockWithoutItem(name, BlockBehaviour.Properties.of());
+    }
+
+    public BlockEntry newBlockWithoutItem(String name, BlockBehaviour.Properties blockProperties) {
+        return newBlockWithoutItem(name, () -> new Block(blockProperties));
+    }
+
+    public BlockEntry newBlockWithoutItem(String name, Supplier<? extends Block> blockSupplier) {
+        RegistryObject<Block> blockRegistry = BLOCKS.register(name, blockSupplier);
+        return new BlockEntry(blockRegistry, null);
+    }
+
+    @Override
+    public void init(IEventBus bus) {
+        BLOCKS.register(bus);
+        if (itemRegister != null) itemRegister.init(bus);
+    }
+
+    public  Collection<RegistryObject<Block>> getBlocks() {
+        return BLOCKS.getEntries();
+    }
+
+    @Nullable
+    public Collection<RegistryObject<Item>> getBlockItems() {
+        if (itemRegister != null) return itemRegister.getItems();
+        else return null;
+    }
+
+    public static BlockRegister of(String modid) {
+        return new BlockRegister(modid);
     }
 
 }

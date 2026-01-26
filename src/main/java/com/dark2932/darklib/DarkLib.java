@@ -5,7 +5,9 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
-import static com.dark2932.darklib.test.DarkLibItems.*;
+import static com.dark2932.darklib.test.DarkLibBlocks.BLOCK_REGISTER;
+import static com.dark2932.darklib.test.DarkLibItems.ITEM_REGISTER;
+import static com.dark2932.darklib.test.DarkLibTabs.TAB_REGISTER;
 
 /**
  * @author Dark2932
@@ -17,8 +19,8 @@ public class DarkLib {
 
     public DarkLib(FMLJavaModLoadingContext context) {
         IEventBus bus = context.getModEventBus();
-        ITEM_REGISTER.init(bus);
         BLOCK_REGISTER.init(bus);
+        ITEM_REGISTER.init(bus);
         TAB_REGISTER.init(bus);
     }
 

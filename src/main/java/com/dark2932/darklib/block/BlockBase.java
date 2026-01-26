@@ -1,26 +1,42 @@
 package com.dark2932.darklib.block;
 
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+
+import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /**
  * @author Dark2932
  */
 public abstract class BlockBase {
 
-    private final String name;
-    private final BlockBehaviour.Properties blockProperties;
-    private final Item.Properties itemProperties;
+    protected final String name;
+    protected final BlockBehaviour.Properties blockProperties;
+    protected final @Nullable Item.Properties itemProperties;
+    protected final Supplier<? extends Block> blockSupplier;
 
     protected BlockBase() {
         this.name = setName();
         this.blockProperties = setBlockProperties();
         this.itemProperties = setItemProperties();
+        this.blockSupplier = setBlockSupplier();
     }
 
     protected abstract String setName();
-    protected abstract BlockBehaviour.Properties setBlockProperties();
-    protected abstract Item.Properties setItemProperties();
+
+    protected BlockBehaviour.Properties setBlockProperties() {
+        return BlockBehaviour.Properties.of();
+    }
+
+    protected Item.Properties setItemProperties() {
+        return null;
+    }
+
+    protected Supplier<? extends Block> setBlockSupplier() {
+        return () -> new Block(blockProperties);
+    }
 
     public String getName() {
         return name;
@@ -30,8 +46,13 @@ public abstract class BlockBase {
         return blockProperties;
     }
 
+    @Nullable
     public Item.Properties getItemProperties() {
         return itemProperties;
+    }
+
+    public Supplier<? extends Block> getBlockSupplier() {
+        return blockSupplier;
     }
 
 }

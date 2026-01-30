@@ -1,8 +1,10 @@
-package com.dark2932.darklib.register;
+package com.dark2932.darklib.register.block;
 
 import com.dark2932.darklib.block.BlockBase;
 import com.dark2932.darklib.block.BlockEntry;
 import com.dark2932.darklib.item.ItemEntry;
+import com.dark2932.darklib.register.IRegister;
+import com.dark2932.darklib.register.item.ItemRegister;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -58,7 +60,7 @@ public class BlockRegister extends IRegister<Block> {
         return new BlockEntry(blockRegistry, itemEntry.itemRegistry());
     }
 
-    public ItemEntry newBlockItem(RegistryObject<Block> blockRegistry, Item.Properties itemProperties) {
+    private ItemEntry newBlockItem(RegistryObject<Block> blockRegistry, Item.Properties itemProperties) {
         ResourceLocation location = Objects.requireNonNull(blockRegistry.getId());
         if (itemRegister == null) itemRegister = ItemRegister.of(location.getNamespace());
         return itemRegister.newItem(location.getPath(), () -> new BlockItem(blockRegistry.get(), itemProperties));
@@ -81,13 +83,7 @@ public class BlockRegister extends IRegister<Block> {
         return new BlockEntry(blockRegistry, null);
     }
 
-    @Override
-    public void init(IEventBus bus) {
-        BLOCKS.register(bus);
-        if (itemRegister != null) itemRegister.init(bus);
-    }
-
-    public  Collection<RegistryObject<Block>> getBlocks() {
+    public Collection<RegistryObject<Block>> getBlocks() {
         return BLOCKS.getEntries();
     }
 
@@ -95,6 +91,12 @@ public class BlockRegister extends IRegister<Block> {
     public Collection<RegistryObject<Item>> getBlockItems() {
         if (itemRegister != null) return itemRegister.getItems();
         else return null;
+    }
+
+    @Override
+    public void init(IEventBus bus) {
+        BLOCKS.register(bus);
+        if (itemRegister != null) itemRegister.init(bus);
     }
 
     public static BlockRegister of(String modid) {

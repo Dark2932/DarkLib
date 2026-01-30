@@ -1,4 +1,4 @@
-package com.dark2932.darklib.register;
+package com.dark2932.darklib.register.item;
 
 import com.dark2932.darklib.item.ItemBase;
 import com.dark2932.darklib.item.ItemEntry;

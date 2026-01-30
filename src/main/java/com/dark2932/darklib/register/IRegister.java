@@ -22,10 +22,4 @@ public class IRegister<T> {
         register.register(bus);
     }
 
-    public static void init(IEventBus bus, IRegister<?>... registers) {
-        for (IRegister<?> register : registers) {
-            register.init(bus);
-        }
-    }
-
 }

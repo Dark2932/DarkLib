@@ -16,30 +16,18 @@ import java.util.function.Supplier;
  */
 public class CreativeTabRegister extends IRegister<CreativeModeTab> {
 
+    private final String MODID;
     private final DeferredRegister<CreativeModeTab> TABS;
 
     public CreativeTabRegister(String modid) {
         super(DeferredRegister.create(Registries.CREATIVE_MODE_TAB, modid));
+        this.MODID = modid;
         this.TABS = super.getDeferredRegister();
     }
 
-    public RegistryObject<CreativeModeTab> newTab(String name, ItemEntry icon, String modid) {
-        return newTab(name, icon, (parameters, output) -> {
-            for (IRegister<?> register : MOD_REGISTERS.getModRegisters(modid).values()) {
-                register.getDeferredRegister().getEntries().forEach(item -> {
-                    output.accept((Item) item.get());
-                });
-            }
-        });
+    public RegistryObject<CreativeModeTab> newTab(String name, ItemEntry icon) {
+        return newTab(name, icon, getQuickGenerator());
     }
-
-//    public RegistryObject<CreativeModeTab> newTab(String name, ItemEntry icon, ItemRegister... registers) {
-//        return newTab(name, icon, (parameters, output) -> {
-//            for (ItemRegister register : registers) {
-//                register.getDeferredRegister().getEntries().forEach(item -> output.accept(item.get()));
-//            }
-//        });
-//    }
 
     public RegistryObject<CreativeModeTab> newTab(String name, ItemEntry icon, DisplayItemsGenerator generator) {
         return newTab(name, () -> CreativeModeTab.builder()
@@ -60,6 +48,16 @@ public class CreativeTabRegister extends IRegister<CreativeModeTab> {
             .icon(icon::stack)
             .build()
         );
+    }
+
+    public DisplayItemsGenerator getQuickGenerator() {
+        return (parameters, output) -> {
+            for (IRegister<?> register : MOD_REGISTERS.getModRegisters(MODID).values()) {
+                register.getDeferredRegister().getEntries().forEach(item -> {
+                    output.accept((Item) item.get());
+                });
+            }
+        };
     }
 
     public static CreativeTabRegister of(String modid) {

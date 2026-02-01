@@ -4,6 +4,7 @@ import com.dark2932.darklib.item.ItemEntry;
 import com.dark2932.darklib.register.IRegister;
 import com.dark2932.darklib.register.MOD_REGISTERS;
 import net.minecraft.world.item.Item;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -23,7 +24,7 @@ public class ItemRegisterBase extends IRegister<Item> {
     protected ItemRegisterBase(String modid) {
         super(DeferredRegister.create(ForgeRegistries.ITEMS, modid));
         this.MODID = modid;
-        this.index = MOD_REGISTERS.initLocation(modid, this);
+        this.index = MOD_REGISTERS.initLocation(modid, "item", this);
         this.ITEMS = super.getDeferredRegister();
     }
 
@@ -33,12 +34,17 @@ public class ItemRegisterBase extends IRegister<Item> {
 
     protected ItemEntry newItem(String name, Supplier<? extends Item> itemSupplier) {
         RegistryObject<Item> itemRegistry = ITEMS.register(name, itemSupplier);
-        MOD_REGISTERS.getModRegisters(MODID).replace(index, this);
         return new ItemEntry(itemRegistry);
     }
 
     public Collection<RegistryObject<Item>> getItems() {
         return ITEMS.getEntries();
+    }
+
+    @Override
+    public void init(IEventBus bus) {
+        super.init(bus);
+        MOD_REGISTERS.setRegister(MODID, "item", index, this);
     }
 
 }

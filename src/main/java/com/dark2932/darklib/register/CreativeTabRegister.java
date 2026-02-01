@@ -52,7 +52,7 @@ public class CreativeTabRegister extends IRegister<CreativeModeTab> {
 
     public DisplayItemsGenerator getQuickGenerator() {
         return (parameters, output) -> {
-            for (IRegister<?> register : MOD_REGISTERS.getModRegisters(MODID).values()) {
+            for (IRegister<?> register : MOD_REGISTERS.getSameRegisters(MODID, "item")) {
                 register.getDeferredRegister().getEntries().forEach(item -> {
                     output.accept((Item) item.get());
                 });

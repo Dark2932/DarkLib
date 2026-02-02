@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 public class FoodRegister extends ItemRegisterBase {
 
     public FoodRegister(String modid) {
-        super(modid);
+        super(modid, "item_food");
     }
 
     public ItemEntry newFood(String name, FoodProperties foodProperties) {

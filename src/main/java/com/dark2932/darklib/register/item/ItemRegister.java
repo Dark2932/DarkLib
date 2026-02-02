@@ -3,6 +3,8 @@ package com.dark2932.darklib.register.item;
 import com.dark2932.darklib.item.ItemBase;
 import com.dark2932.darklib.item.ItemEntry;
 import net.minecraft.world.item.Item;
+
+import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 /**
@@ -11,7 +13,7 @@ import java.util.function.Supplier;
 public class ItemRegister extends ItemRegisterBase {
 
     public ItemRegister(String modid) {
-        super(modid);
+        super(modid, "item");
     }
 
     public ItemEntry newItem(ItemBase base) {

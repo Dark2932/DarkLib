@@ -52,6 +52,10 @@ public class MOD_REGISTERS {
         return index;
     }
 
+    public static String printAllRegisters() {
+        return "";
+    }
+
     public static void setRegister(String modid, String type, int index, IRegister<?> newRegister) {
         MOD_TYPE_REGISTERS.get(modid).get(type).set(index, newRegister);
     }

@@ -4,9 +4,7 @@ import com.dark2932.darklib.block.BlockBase;
 import com.dark2932.darklib.block.BlockEntry;
 import com.dark2932.darklib.item.ItemEntry;
 import com.dark2932.darklib.register.IRegister;
-import com.dark2932.darklib.register.item.ItemRegister;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.BlockItem;
+import com.dark2932.darklib.register.item.BlockItemRegister;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -17,7 +15,6 @@ import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
@@ -26,12 +23,12 @@ import java.util.function.Supplier;
 public class BlockRegister extends IRegister<Block> {
 
     private final DeferredRegister<Block> BLOCKS;
-    private @Nullable ItemRegister itemRegister;
+    private @Nullable BlockItemRegister blockItemRegister;
 
     public BlockRegister(String modid) {
-        super(DeferredRegister.create(ForgeRegistries.BLOCKS, modid));
+        super(modid, "block", DeferredRegister.create(ForgeRegistries.BLOCKS, modid));
         this.BLOCKS = super.getDeferredRegister();
-        this.itemRegister = null;
+        this.blockItemRegister = null;
     }
 
     public BlockEntry newBlock(BlockBase base) {
@@ -56,14 +53,9 @@ public class BlockRegister extends IRegister<Block> {
 
     public BlockEntry newBlock(String name, Supplier<? extends Block> blockSupplier, Item.Properties itemProperties) {
         RegistryObject<Block> blockRegistry = BLOCKS.register(name, blockSupplier);
-        ItemEntry itemEntry = newBlockItem(blockRegistry, itemProperties);
+        if (blockItemRegister == null) blockItemRegister = BlockItemRegister.of(super.getModId());
+        ItemEntry itemEntry = blockItemRegister.newBlockItem(blockRegistry, itemProperties);
         return new BlockEntry(blockRegistry, itemEntry.itemRegistry());
-    }
-
-    private ItemEntry newBlockItem(RegistryObject<Block> blockRegistry, Item.Properties itemProperties) {
-        ResourceLocation location = Objects.requireNonNull(blockRegistry.getId());
-        if (itemRegister == null) itemRegister = ItemRegister.of(location.getNamespace());
-        return itemRegister.newItem(location.getPath(), () -> new BlockItem(blockRegistry.get(), itemProperties));
     }
 
     public BlockEntry newBlockWithoutItem(BlockBase base) {
@@ -89,14 +81,18 @@ public class BlockRegister extends IRegister<Block> {
 
     @Nullable
     public Collection<RegistryObject<Item>> getBlockItems() {
-        if (itemRegister != null) return itemRegister.getItems();
-        else return null;
+        return (blockItemRegister != null) ? blockItemRegister.getItems() : null;
+    }
+
+    @Nullable
+    public BlockItemRegister getBlockItemRegister() {
+        return blockItemRegister;
     }
 
     @Override
     public void init(IEventBus bus) {
-        BLOCKS.register(bus);
-        if (itemRegister != null) itemRegister.init(bus);
+        super.init(bus);
+        if (blockItemRegister != null) blockItemRegister.init(bus);
     }
 
     public static BlockRegister of(String modid) {

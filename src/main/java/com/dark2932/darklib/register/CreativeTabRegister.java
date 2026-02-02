@@ -16,12 +16,10 @@ import java.util.function.Supplier;
  */
 public class CreativeTabRegister extends IRegister<CreativeModeTab> {
 
-    private final String MODID;
     private final DeferredRegister<CreativeModeTab> TABS;
 
     public CreativeTabRegister(String modid) {
-        super(DeferredRegister.create(Registries.CREATIVE_MODE_TAB, modid));
-        this.MODID = modid;
+        super(modid, "creative_mode_tab", DeferredRegister.create(Registries.CREATIVE_MODE_TAB, modid));
         this.TABS = super.getDeferredRegister();
     }
 
@@ -52,7 +50,7 @@ public class CreativeTabRegister extends IRegister<CreativeModeTab> {
 
     public DisplayItemsGenerator getQuickGenerator() {
         return (parameters, output) -> {
-            for (IRegister<?> register : MOD_REGISTERS.getSameRegisters(MODID, "item")) {
+            for (IRegister<?> register : MOD_REGISTERS.getSameRegisters(super.getModId(), "item")) {
                 register.getDeferredRegister().getEntries().forEach(item -> {
                     output.accept((Item) item.get());
                 });

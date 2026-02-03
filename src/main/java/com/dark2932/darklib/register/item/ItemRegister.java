@@ -1,10 +1,8 @@
 package com.dark2932.darklib.register.item;
 
-import com.dark2932.darklib.item.ItemBase;
-import com.dark2932.darklib.item.ItemEntry;
+import com.dark2932.darklib.util.ItemEntry;
 import net.minecraft.world.item.Item;
 
-import javax.annotation.Nullable;
 import java.util.function.Supplier;
 
 /**
@@ -14,10 +12,6 @@ public class ItemRegister extends ItemRegisterBase {
 
     public ItemRegister(String modid) {
         super(modid, "item");
-    }
-
-    public ItemEntry newItem(ItemBase base) {
-        return newItem(base.getName(), base.getItemSupplier());
     }
 
     public ItemEntry newItem(String name) {
@@ -30,6 +24,10 @@ public class ItemRegister extends ItemRegisterBase {
 
     public ItemEntry newItem(String name, Supplier<? extends Item> itemSupplier) {
         return super.newItem(name, itemSupplier);
+    }
+
+    public ItemEntry newItem(Class<? extends Item> c) {
+        return super.newItem(c);
     }
 
     public static ItemRegister of(String modid) {

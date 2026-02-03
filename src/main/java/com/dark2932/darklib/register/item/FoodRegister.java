@@ -1,6 +1,6 @@
 package com.dark2932.darklib.register.item;
 
-import com.dark2932.darklib.item.ItemEntry;
+import com.dark2932.darklib.util.ItemEntry;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.food.FoodProperties;
@@ -24,6 +24,10 @@ public class FoodRegister extends ItemRegisterBase {
 
     public ItemEntry newFood(String name, Item.Properties itemProperties, FoodProperties foodProperties) {
         return super.newItem(name, itemProperties.food(foodProperties));
+    }
+
+    public ItemEntry newFood(Class<? extends Item> c) {
+        return super.newItem(c);
     }
 
     @SafeVarargs

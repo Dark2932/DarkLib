@@ -1,10 +1,10 @@
 package com.dark2932.darklib.register.block;
 
-import com.dark2932.darklib.block.BlockBase;
-import com.dark2932.darklib.block.BlockEntry;
-import com.dark2932.darklib.item.ItemEntry;
+import com.dark2932.darklib.util.BlockEntry;
+import com.dark2932.darklib.util.ItemEntry;
 import com.dark2932.darklib.register.IRegister;
 import com.dark2932.darklib.register.item.BlockItemRegister;
+import com.dark2932.darklib.util.annotation.NameProvider;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -14,6 +14,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.function.Supplier;
 
@@ -29,10 +30,6 @@ public class BlockRegister extends IRegister<Block> {
         super(modid, "block", DeferredRegister.create(ForgeRegistries.BLOCKS, modid));
         this.BLOCKS = super.getDeferredRegister();
         this.blockItemRegister = null;
-    }
-
-    public BlockEntry newBlock(BlockBase base) {
-        return newBlock(base.getName(), base.getBlockSupplier(), (base.getItemProperties() == null ? new Item.Properties() : base.getItemProperties()));
     }
 
     public BlockEntry newBlock(String name) {
@@ -58,8 +55,19 @@ public class BlockRegister extends IRegister<Block> {
         return new BlockEntry(blockRegistry, itemEntry.itemRegistry());
     }
 
-    public BlockEntry newBlockWithoutItem(BlockBase base) {
-        return newBlockWithoutItem(base.getName(), base.getBlockSupplier());
+    public BlockEntry newBlock(Class<? extends Block> c) {
+        return newBlock(c, new Item.Properties());
+    }
+
+    public BlockEntry newBlock(Class<? extends Block> c, Item.Properties itemProperties) {
+        NameProvider annotation = c.getAnnotation(NameProvider.class);
+        return newBlock(annotation.name(), () -> {
+            try {
+                return c.getDeclaredConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }, itemProperties);
     }
 
     public BlockEntry newBlockWithoutItem(String name) {
@@ -73,6 +81,17 @@ public class BlockRegister extends IRegister<Block> {
     public BlockEntry newBlockWithoutItem(String name, Supplier<? extends Block> blockSupplier) {
         RegistryObject<Block> blockRegistry = BLOCKS.register(name, blockSupplier);
         return new BlockEntry(blockRegistry, null);
+    }
+
+    public BlockEntry newBlockWithoutItem(Class<? extends Block> c) {
+        NameProvider annotation = c.getAnnotation(NameProvider.class);
+        return newBlockWithoutItem(annotation.name(), () -> {
+            try {
+                return c.getDeclaredConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     public Collection<RegistryObject<Block>> getBlocks() {

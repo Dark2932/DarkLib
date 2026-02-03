@@ -1,6 +1,6 @@
 package com.dark2932.darklib.register;
 
-import com.dark2932.darklib.item.ItemEntry;
+import com.dark2932.darklib.util.ItemEntry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -50,10 +50,15 @@ public class CreativeTabRegister extends IRegister<CreativeModeTab> {
 
     public DisplayItemsGenerator getQuickGenerator() {
         return (parameters, output) -> {
-            for (IRegister<?> register : MOD_REGISTERS.getSameRegisters(super.getModId(), "item")) {
-                register.getDeferredRegister().getEntries().forEach(item -> {
-                    output.accept((Item) item.get());
-                });
+            var typeLevel = MOD_REGISTERS.getModRegistersMap(super.getModId());
+            for (String type : typeLevel.keySet()) {
+                if (type.contains("item")) {
+                    for (IRegister<?> register : typeLevel.get(type)) {
+                        register.getDeferredRegister().getEntries().forEach(item -> {
+                            output.accept((Item) item.get());
+                        });
+                    }
+                }
             }
         };
     }

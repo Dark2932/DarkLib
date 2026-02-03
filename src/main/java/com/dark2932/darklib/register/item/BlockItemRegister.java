@@ -1,6 +1,6 @@
 package com.dark2932.darklib.register.item;
 
-import com.dark2932.darklib.item.ItemEntry;
+import com.dark2932.darklib.util.ItemEntry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;

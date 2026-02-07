@@ -1,7 +1,7 @@
 package com.dark2932.darklib.register.item;
 
-import com.dark2932.darklib.util.ItemEntry;
 import com.dark2932.darklib.register.IRegister;
+import com.dark2932.darklib.util.ItemEntry;
 import com.dark2932.darklib.util.annotation.NameProvider;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.DeferredRegister;

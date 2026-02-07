@@ -1,9 +1,9 @@
 package com.dark2932.darklib.register.block;
 
-import com.dark2932.darklib.util.BlockEntry;
-import com.dark2932.darklib.util.ItemEntry;
 import com.dark2932.darklib.register.IRegister;
 import com.dark2932.darklib.register.item.BlockItemRegister;
+import com.dark2932.darklib.util.BlockEntry;
+import com.dark2932.darklib.util.ItemEntry;
 import com.dark2932.darklib.util.annotation.NameProvider;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;

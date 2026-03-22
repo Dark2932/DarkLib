@@ -11,7 +11,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
@@ -21,19 +20,21 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 import static com.dark2932.darklib.DarkLib.FOLDER;
+import static com.dark2932.darklib.DarkLib.checkFolder;
 
 /**
  * @author Dark2932
  */
 public class DLCommand extends DLAbstractCommand {
 
-    private static final Map<String, ResourceKey<? extends Registry<?>>> REGISTRIES = new TreeMap<>();
+    private static final List<ResourceKey<Registry<?>>> REGISTRIES = new ArrayList<>();
 
-    //扫描Registries中所有的静态常量，并存放在一个TreeMap中
+    //扫描Registries中所有的静态常量，并存放在一个List中
     static {
         for (Field field : Registries.class.getFields()) {
             if (Modifier.isPublic(field.getModifiers()) && Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers())) {
@@ -41,9 +42,7 @@ public class DLCommand extends DLAbstractCommand {
                     try {
                         Object value = field.get(null);
                         if (value instanceof ResourceKey<?> key) {
-                            // Check if the key refers to a registry (usually it starts with 'minecraft:...')
-                            // or just take everything that is a ResourceKey in Registries class
-                            REGISTRIES.put(formatName(field.getName()), (ResourceKey<? extends Registry<?>>) key);
+                            REGISTRIES.add((ResourceKey<Registry<?>>) key);
                         }
                     } catch (IllegalAccessException ignored) {}
                 }
@@ -54,58 +53,77 @@ public class DLCommand extends DLAbstractCommand {
     //通过在事件里调用父类方法实现注册，这里仅做具体实现
     @Override
     public void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        var command = Commands.literal("darklib")
-                .requires(source -> source.hasPermission(4));
+        var main_cmd = Commands.literal("darklib").requires(source -> source.hasPermission(4));
 
-        for (Map.Entry<String, ResourceKey<? extends Registry<?>>> entry : REGISTRIES.entrySet()) {
-            command.then(Commands.literal("save" + entry.getKey())
-                    .executes(ctx -> writeToFile(entry.getKey().toLowerCase(), (ResourceKey) entry.getValue(), ctx))
+        //'saveAll' command
+        main_cmd.then(Commands.literal("saveAll")
+                .executes(ctx -> {
+                    for (ResourceKey<Registry<?>> key : REGISTRIES) {
+                        writeToFile(formatName((ResourceKey) key), (ResourceKey) key, ctx, true);
+                    }
+                    ctx.getSource().sendSuccess(() -> Component.literal("All registries have been successfully saved to: ").append(
+                            Component.literal(FOLDER.toAbsolutePath().toString())
+                                    .withStyle(style -> style
+                                            .withColor(ChatFormatting.GREEN)
+                                            .withUnderlined(true)
+                                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, FOLDER.toAbsolutePath().toString()))
+                                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to open the folder")))
+                                    )
+                    ), true);
+                    return 0;
+                })
+        );
+
+        //'save' command
+        var save_cmd = Commands.literal("save");
+        for (ResourceKey<Registry<?>> key : REGISTRIES) {
+            String name = formatName((ResourceKey) key);
+            save_cmd.then(Commands.literal(name)
+                    .executes(ctx -> writeToFile(name, (ResourceKey) key, ctx, false))
             );
         }
+        main_cmd.then(save_cmd);
 
-        dispatcher.register(command);
+        dispatcher.register(main_cmd);
     }
 
-    private static <T> int writeToFile(String fileName, ResourceKey<Registry<T>> key, CommandContext<CommandSourceStack> ctx) {
+    private static <T> int writeToFile(String fileName, ResourceKey<Registry<T>> key, CommandContext<CommandSourceStack> ctx, boolean silent) {
+        checkFolder();
         Path file = FOLDER.resolve(fileName + ".txt");
         try (BufferedWriter writer = Files.newBufferedWriter(file)) {
 
-            //写入
+            //排序并写入txt文件
             Registry<T> objs = ctx.getSource().registryAccess().registryOrThrow(key);
-            for (T registry : objs) {
-                ResourceLocation id = objs.getKey(registry);
-                if (id != null) {
-                    writer.write(id.toString());
-                    writer.newLine();
-                }
+            List<ResourceLocation> ids = new ArrayList<>(objs.keySet());
+            ids.sort(Comparator.comparing(ResourceLocation::getNamespace).thenComparing(ResourceLocation::getPath));
+            for (ResourceLocation id : ids) {
+                writer.write(id.toString());
+                writer.newLine();
             }
 
-            //发送存储地址并可以通过点击打开
-            String filePath = file.toAbsolutePath().toString();
-            MutableComponent pathComponent = Component.literal(filePath)
-                    .withStyle(style -> style
-                            .withColor(ChatFormatting.GREEN)
-                            .withUnderlined(true)
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, filePath))
-                            .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to open the file")))
-                    );
-            ctx.getSource().sendSuccess(() -> Component.literal("Objects are successfully saved to: ").append(pathComponent), true);
+            //silent为false时，发送存储地址并可以通过点击打开
+            if (!silent) {
+                String filePath = file.toAbsolutePath().toString();
+                ctx.getSource().sendSuccess(() -> Component.literal("All ids have been successfully saved to: ").append(
+                        Component.literal(filePath)
+                                .withStyle(style -> style
+                                        .withColor(ChatFormatting.GREEN)
+                                        .withUnderlined(true)
+                                        .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, filePath))
+                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to open the file")))
+                                )
+                ), true);
+            }
 
         } catch (IOException e) {
-            ctx.getSource().sendFailure(Component.literal("Failed to save objects: ").withStyle(ChatFormatting.RED).append(e.getMessage()));
+            ctx.getSource().sendFailure(Component.literal("Failed to save ids: " + e.getClass().getName()).withStyle(ChatFormatting.RED));
         }
         return 0;
     }
 
-    private static String formatName(String name) {
-        String[] parts = name.split("_");
-        StringBuilder sb = new StringBuilder();
-        for (String part : parts) {
-            if (!part.isEmpty()) {
-                sb.append(part.substring(0, 1).toUpperCase()).append(part.substring(1).toLowerCase());
-            }
-        }
-        return sb.toString();
+    private static <T> String formatName(ResourceKey<Registry<T>> key) {
+        String name = key.location().getPath();
+        return name.contains("worldgen/") ? name.replace("worldgen/", "") : name;
     }
 
 }
